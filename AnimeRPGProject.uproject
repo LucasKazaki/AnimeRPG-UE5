@@ -1,0 +1,13 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.8",
+  "Category": "Games",
+  "Description": "Minimal third-person C++ foundation for AnimeRPG.",
+  "Modules": [
+    {
+      "Name": "AnimeRPGProject",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}
