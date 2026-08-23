@@ -2,7 +2,7 @@
   "FileVersion": 3,
   "EngineAssociation": "5.8",
   "Category": "Games",
-  "Description": "Minimal third-person C++ foundation for AnimeRPG.",
+  "Description": "Experimental minimal third-person C++ prototype for AnimeRPG.",
   "Modules": [
     {
       "Name": "AnimeRPGProject",

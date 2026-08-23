@@ -1,7 +1,23 @@
+# Unreal-generated project state
 Binaries/
 DerivedDataCache/
 Intermediate/
 Saved/
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+
+# IDE-generated files
 .vs/
-*.sln
 .vscode/
+.idea/
+*.sln
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+*.suo
+*.user
+
+# Local operating-system files
+.DS_Store
+Thumbs.db
