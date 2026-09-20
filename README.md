@@ -1,63 +1,81 @@
 # AnimeRPGProject
 
-> **Experimental Unreal Engine prototype.** This repository is a small, standalone C++ exploration and is not the production runtime for the custom Astral Engine / AnimeRPG project.
-
-AnimeRPGProject is a minimal Unreal Engine 5.8 third-person foundation implemented as one native runtime module. It demonstrates character setup, controller-relative locomotion, a spring-arm camera, jumping, and a launch-based dash without Marketplace content or downloaded game assets.
+**Experimental Unreal source prototype, not the production Astral Engine runtime.**
+The separate [AnimeRPG repository](https://github.com/LucasKazaki/AnimeRPG) retains
+its custom C++17 engine. Read [agent rules](AGENTS.md) and
+[audit evidence](Docs/AUDIT-2026-09-19.md) before expanding this experiment.
 
 ## Implemented slice
 
-- Native `ACharacter` subclass selected by a C++ game mode.
-- Controller-relative `WASD` movement with movement-facing rotation.
-- Spring-arm third-person camera with mouse-controlled yaw and pitch.
-- Built-in character jump and an editable dash-strength property.
-- Input and game defaults expressed in checked-in Unreal configuration files.
-- Separate Game and Editor targets for the single `AnimeRPGProject` module.
-
-## Controls
+One native runtime module provides an ACharacter, controller-relative locomotion,
+a spring-arm third-person camera, jump, and a launch-based dash. A native game
+mode selects the character. No Marketplace content or downloaded art is required.
 
 | Input | Action |
 |---|---|
-| `W` `A` `S` `D` | Move |
+| W, A, S, D | Move |
 | Mouse | Rotate camera |
-| `Space` | Jump |
-| Left `Shift` | Dash in the current movement direction, or forward from rest |
+| Space | Jump |
+| Left Shift | Dash in the movement direction, or forward from rest |
 
-## Project layout
+`Source/AnimeRPGProject` holds the module/character/game mode;
+`Source/*.Target.cs` holds Game and Editor targets; `Config` holds checked-in
+input and engine defaults; `AnimeRPGProject.uproject` declares the module.
 
-| Location | Purpose |
-|---|---|
-| `Source/AnimeRPGProject` | Runtime module, character, and game mode |
-| `Source/*.Target.cs` | Game and Editor build targets |
-| `Config/DefaultInput.ini` | Keyboard and mouse mappings |
-| `Config/DefaultEngine.ini` | Engine defaults |
-| `AnimeRPGProject.uproject` | Unreal project and module metadata |
+## Source checks, no Unreal installation required
 
-## Build
-
-Requirements:
-
-- Unreal Engine 5.8 installed on Windows
-- Visual Studio with the Game development with C++ workload and Windows SDK
-- The .NET Framework SDK required by the installed Unreal Build Tool, including `NETFXSDK` headers and libraries
-
-From PowerShell in the repository root, adjust the engine path if Unreal is installed elsewhere:
+Python 3.10+:
 
 ```powershell
-& "C:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\Build.bat" `
-    AnimeRPGProjectEditor Win64 Development `
-    "$PWD\AnimeRPGProject.uproject" -WaitMutex
+python Scripts/validate_project.py
+python -m unittest discover -s Tests -p "test_*.py" -v
 ```
 
-Replace `AnimeRPGProjectEditor` with `AnimeRPGProject` to compile the standalone Game target.
+The checker validates basic module/target, input, and game-mode relationships.
+Regression tests cover broken metadata, missing targets/mappings, and engine
+version mismatches. CI runs these source checks only. They do **not** compile C++,
+run UnrealHeaderTool, launch an Editor, or establish a working packaged game.
 
-You can also open `AnimeRPGProject.uproject` in the Unreal Editor and allow it to generate local project files when prompted.
+## Native build, separate gate
 
-## Scope and validation
+The checked-in EngineAssociation is `5.8`. Treat that as this project's recorded
+requirement, not a claim about the latest engine or proof of an installed SDK.
+Do not silently upgrade or downgrade it. Native work requires a compatible Unreal
+installation on Windows, Visual Studio Game development with C++, Windows SDK,
+and the .NET Framework SDK needed by the installed Unreal Build Tool.
 
-This is a source-only foundation rather than a vertical slice: it contains no production level, UI, combat, content pipeline, packaged build, or automated test suite. Compiling the Game and Editor targets is the current machine-checkable gate. A Game-target binary by itself is not a cooked distribution; interactive validation should run through a compatible Unreal Editor installation or a separately prepared package.
+From the repository root in PowerShell, set the actual installed engine path.
+The preflight reads its Build.version before compiling both targets and stops
+on the first failure:
 
-Generated directories such as `Binaries`, `DerivedDataCache`, `Intermediate`, `Saved`, and `.vs` are local build state and are not source deliverables.
+```powershell
+$engine = "C:\Program Files\Epic Games\UE_5.8"
+python Scripts/validate_project.py --engine-root $engine
+if ($LASTEXITCODE -ne 0) { throw "Source or engine preflight failed." }
+$build = Join-Path $engine "Engine\Build\BatchFiles\Build.bat"
+$project = Join-Path $PWD "AnimeRPGProject.uproject"
+foreach ($target in @("AnimeRPGProjectEditor", "AnimeRPGProject")) {
+    & $build $target Win64 Development $project -WaitMutex
+    if ($LASTEXITCODE -ne 0) { throw "$target build failed with exit code $LASTEXITCODE." }
+}
+```
+
+Retain the installed version, source commit, full output, and each exit code.
+Open the project in a compatible editor for separate interactive validation.
+A Game-target binary alone is not a cooked distribution.
+
+## Scope and evidence limits
+
+There is no checked-in production level, UI, combat, content pipeline, cooked
+package, or full RPG in this repository. A suitable editor scene and native
+movement/camera/jump/dash evidence remain separate requirements. This source
+experiment does not authorize resuming paused Astral Engine game-content work.
+
+Generated Binaries, DerivedDataCache, Intermediate, Saved, and .vs directories
+are local build state, not source deliverables. The audit added no Source/,
+Config/, engine-version, gameplay, or third-party dependency changes.
 
 ## License
 
-No project-level open-source license is currently included. The repository is available for source review, but reuse rights have not been granted.
+No project-level open-source license is included. Source visibility is not a grant
+of reuse rights. No license or external assets are added by this audit.
