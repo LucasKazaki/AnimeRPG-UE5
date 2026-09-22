@@ -1,0 +1,35 @@
+name: UE source contract checks
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "Source/**"
+      - "Config/**"
+      - "*.uproject"
+      - "Scripts/**"
+      - "Tests/**"
+      - ".github/workflows/source-checks.yml"
+  push:
+    branches: [master]
+    paths:
+      - "Source/**"
+      - "Config/**"
+      - "*.uproject"
+      - "Scripts/**"
+      - "Tests/**"
+      - ".github/workflows/source-checks.yml"
+permissions:
+  contents: read
+concurrency:
+  group: ue-source-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check source configuration (not an Unreal build)
+        run: python3 Scripts/validate_project.py
+      - name: Run source-checker regression tests
+        run: python3 -m unittest discover -s Tests -p "test_*.py" -v
